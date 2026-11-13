@@ -7,6 +7,7 @@ namespace Aurora {
     tokenizer: WordTokenizer | null;
     info: { loss: number } | null;
     training: boolean;
+    generating: boolean;
   }
 
   export const App = {
@@ -17,7 +18,8 @@ namespace Aurora {
       model: null,
       tokenizer: null,
       info: null,
-      training: false
+      training: false,
+      generating: false
     } as AppState,
 
     init(): void {

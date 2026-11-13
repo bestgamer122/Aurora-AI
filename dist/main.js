@@ -9,7 +9,8 @@ var Aurora;
             model: null,
             tokenizer: null,
             info: null,
-            training: false
+            training: false,
+            generating: false
         },
         init() {
             this.loadState();

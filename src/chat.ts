@@ -82,7 +82,7 @@ namespace Aurora {
     sendMessage(): void {
       const input = document.getElementById('input') as HTMLTextAreaElement;
       const text = input.value.trim();
-      if (!text || App.state.training) return;
+      if (!text || App.state.training || App.state.generating) return;
 
       const chat = this.activeChat();
       if (!chat) return;
@@ -95,6 +95,8 @@ namespace Aurora {
       App.saveState();
       this.renderChats();
       this.renderMessages();
+      
+      App.state.generating = true;
       this.updateSendButton();
 
       const typingEl = this.appendMsg('bot', '<div class="typing"><span></span><span></span><span></span></div>');
@@ -102,7 +104,7 @@ namespace Aurora {
       setTimeout(() => {
         typingEl.remove();
         this.generateReply(text);
-      }, 600);
+      }, 800);
     },
 
     generateReply(userText: string): void {
@@ -114,6 +116,8 @@ namespace Aurora {
         chat.messages.push(msg);
         App.saveState();
         this.appendMsg(msg.role, msg.text);
+        App.state.generating = false;
+        this.updateSendButton();
         return;
       }
 
@@ -180,6 +184,9 @@ namespace Aurora {
           App.saveState();
         } catch (e: any) {
           bubble.textContent = 'Ошибка генерации: ' + e.message;
+        } finally {
+          App.state.generating = false;
+          this.updateSendButton();
         }
       }, 50);
     },
@@ -187,7 +194,13 @@ namespace Aurora {
     updateSendButton(): void {
       const input = document.getElementById('input') as HTMLTextAreaElement;
       const btn = document.getElementById('btn-send') as HTMLButtonElement;
-      btn.disabled = !input.value.trim();
+      btn.disabled = !input.value.trim() || App.state.generating;
+      
+      if (App.state.generating) {
+        btn.classList.add('loading');
+      } else {
+        btn.classList.remove('loading');
+      }
     }
   };
 }

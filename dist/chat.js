@@ -62,7 +62,7 @@ var Aurora;
         sendMessage() {
             const input = document.getElementById('input');
             const text = input.value.trim();
-            if (!text || Aurora.App.state.training)
+            if (!text || Aurora.App.state.training || Aurora.App.state.generating)
                 return;
             const chat = this.activeChat();
             if (!chat)
@@ -75,12 +75,13 @@ var Aurora;
             Aurora.App.saveState();
             this.renderChats();
             this.renderMessages();
+            Aurora.App.state.generating = true;
             this.updateSendButton();
             const typingEl = this.appendMsg('bot', '<div class="typing"><span></span><span></span><span></span></div>');
             setTimeout(() => {
                 typingEl.remove();
                 this.generateReply(text);
-            }, 600);
+            }, 800);
         },
         generateReply(userText) {
             const chat = this.activeChat();
@@ -91,6 +92,8 @@ var Aurora;
                 chat.messages.push(msg);
                 Aurora.App.saveState();
                 this.appendMsg(msg.role, msg.text);
+                Aurora.App.state.generating = false;
+                this.updateSendButton();
                 return;
             }
             const prompt = `User: ${userText}\nBot:`;
@@ -154,12 +157,22 @@ var Aurora;
                 catch (e) {
                     bubble.textContent = 'Ошибка генерации: ' + e.message;
                 }
+                finally {
+                    Aurora.App.state.generating = false;
+                    this.updateSendButton();
+                }
             }, 50);
         },
         updateSendButton() {
             const input = document.getElementById('input');
             const btn = document.getElementById('btn-send');
-            btn.disabled = !input.value.trim();
+            btn.disabled = !input.value.trim() || Aurora.App.state.generating;
+            if (Aurora.App.state.generating) {
+                btn.classList.add('loading');
+            }
+            else {
+                btn.classList.remove('loading');
+            }
         }
     };
 })(Aurora || (Aurora = {}));

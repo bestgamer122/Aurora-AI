@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurora AI — Своя нейросеть</title>
+  <meta name="description" content="Чат с нейросетью Aurora, написанной с нуля на TypeScript." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%236366f1'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23fff'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">✦</div>
+      <div class="brand-text">
+        <div class="brand-title">Aurora AI</div>
+        <div class="brand-sub">TS Edition · v1.0</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="btn-new-chat">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      Новый чат
+    </button>
+
+    <div class="section-label">История</div>
+    <div class="chat-list" id="chat-list"></div>
+
+    <div class="sidebar-footer">
+      <div class="model-badge" id="model-badge">
+        <span class="dot" id="model-dot"></span>
+        <span id="model-label">Модель не обучена</span>
+      </div>
+      <button class="btn btn-ghost btn-block" id="btn-open-settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Настройки
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn only-mobile" id="btn-toggle-sidebar">☰</button>
+        <div class="chat-title" id="chat-title">Aurora AI</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="btn-theme" title="Сменить тему">
+          <span class="theme-icon-light">☾</span>
+          <span class="theme-icon-dark">☀</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="composer-container">
+      <form class="composer" id="composer" autocomplete="off">
+        <textarea id="input" rows="1" placeholder="Напишите сообщение Aurora..."></textarea>
+        <button class="send-btn" type="submit" id="btn-send" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </form>
+      <div class="composer-hint">Модель предсказывает следующее слово. Работает локально.</div>
+    </div>
+  </main>
+</div>
+
+<!-- SETTINGS DRAWER -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="drawer">
+  <header class="drawer-head">
+    <h2>Настройки</h2>
+    <button class="icon-btn" id="btn-close-drawer">✕</button>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="train">Обучение</button>
+    <button class="tab" data-tab="model">Модель</button>
+  </nav>
+
+  <div class="drawer-body">
+    <!-- TRAIN PANEL -->
+    <section class="tab-panel active" data-panel="train">
+      <div class="alert">
+        Чтобы Aurora отвечала осмысленно, она обучена предсказывать целые слова. Используйте четкий формат диалогов в корпусе.
+      </div>
+      
+      <label class="field-label">Корпус для обучения</label>
+      <textarea id="corpus" class="code-area" spellcheck="false"></textarea>
+
+      <div class="row">
+        <button class="btn btn-ghost" id="btn-corpus-ru">Пример RU</button>
+      </div>
+
+      <div class="row" style="margin-top: 16px;">
+        <button class="btn btn-primary grow" id="btn-train">Запустить обучение</button>
+        <button class="btn btn-ghost" id="btn-stop" disabled>Стоп</button>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress"><div class="progress-bar" id="train-bar"></div></div>
+        <div class="progress-text" id="train-status">Ожидание...</div>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="loss-chart" height="100"></canvas>
+      </div>
+      <div class="log" id="train-log"></div>
+    </section>
+
+    <!-- MODEL PANEL -->
+    <section class="tab-panel" data-panel="model">
+      <div class="stat-card">
+        <div class="stat-row"><span>Статус</span><b id="model-status">Не обучена</b></div>
+        <div class="stat-row"><span>Словарь</span><b id="model-vocab">—</b></div>
+        <div class="stat-row"><span>Параметров</span><b id="model-params">—</b></div>
+        <div class="stat-row"><span>Loss</span><b id="model-loss">—</b></div>
+      </div>
+      <p class="hint">Модель хранится в памяти браузера. Вы можете протестировать генерацию прямо здесь.</p>
+      
+      <div class="row spaced">
+        <input type="text" id="test-prompt" class="grow" placeholder="Например: привет" value="привет">
+        <button class="btn btn-primary" id="btn-test">Тест</button>
+      </div>
+      <div class="test-output" id="test-output"></div>
+    </section>
+  </div>
+</aside>
+
+<!-- COMPILED SCRIPTS (From dist/) -->
+<script src="dist/matrix.js"></script>
+<script src="dist/tokenizer.js"></script>
+<script src="dist/nn.js"></script>
+<script src="dist/trainer.js"></script>
+<script src="dist/chat.js"></script>
+<script src="dist/settings.js"></script>
+<script src="dist/main.js"></script>
+
+</body>
+</html>

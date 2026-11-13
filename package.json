@@ -1,0 +1,13 @@
+{
+  "name": "aurora-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Word-level neural network in the browser, written in TypeScript",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
